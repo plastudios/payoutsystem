@@ -93,6 +93,10 @@ class MerchantAuthController extends Controller
             ]);
         }
 
+        // Delete all existing tokens before creating new one
+        // This ensures only one active session per merchant for security
+        $user->tokens()->delete();
+
         // Create token with 1-day expiration
         $token = $user->createToken('merchant-api-token', ['*'], now()->addDay());
 
