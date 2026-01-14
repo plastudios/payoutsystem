@@ -43,3 +43,6 @@ yarn-error.log
 
 ## macOS-specific folders
 __MACOSX/
+
+## Agent
+.agent/
