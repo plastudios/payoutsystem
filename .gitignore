@@ -1,0 +1,45 @@
+# Laravel .gitignore
+
+## Laravel specific
+/vendor/
+/node_modules/
+/public/storage
+/storage/*.key
+/storage/*.log
+/.env
+/.env.*.local
+/.env.local
+/.phpunit.result.cache
+/storage/debugbar/*
+/public/hot
+/public/build
+
+## System Files
+.DS_Store
+Thumbs.db
+.idea/
+
+## IDEs and editors
+*.sublime-workspace
+*.sublime-project
+.vscode/
+
+## Composer
+composer.phar
+
+## PHPUnit
+phpunit.xml
+phpunit.xml.dist
+
+## NPM
+npm-debug.log
+yarn-error.log
+
+## macOS
+*.swp
+*.swo
+*.bak
+*.tmp
+
+## macOS-specific folders
+__MACOSX/

@@ -1,0 +1,174 @@
+@extends('layouts.app')
+
+@section('title', 'Dashboard')
+
+@section('content')
+<h2 class="mb-4">Welcome to the Dashboard, {{ Auth::user()->name ?? 'User' }}!</h2>
+
+
+@if(Auth::user()->role === 'merchant')
+<div class="row text-center mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body">
+                <h6>✅ Successful Payouts</h6>
+                <h3>{{ $successCount }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-danger h-100">
+            <div class="card-body">
+                <h6>❌ Failed Payouts</h6>
+                <h3>{{ $failedCount }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body">
+                <h6>💰 Total Success Amount</h6>
+                <h3>{{ number_format($successAmount, 2) }} BDT</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-dark bg-warning h-100">
+            <div class="card-body">
+                <h6>💸 Total Failed Amount</h6>
+                <h3>{{ number_format($failedAmount, 2) }} BDT</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-dark bg-info h-100">
+            <div class="card-body">
+                <h6>💼 Available Balance</h6>
+                <h3>{{ number_format($availableBalance, 2) }} BDT</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-dark" style="background-color: #a0e6a0;">
+            <div class="card-body">
+                <h6>🟢 Total Credited</h6>
+                <h3>{{ number_format($credit, 2) }} BDT</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white" style="background-color: #f5a5a5;">
+            <div class="card-body">
+                <h6>🔴 Total Debited</h6>
+                <h3>{{ number_format($debit, 2) }} BDT</h3>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+@if(Auth::user()->role === 'admin')
+<div class="row text-center">
+    <div class="col-md-3">
+        <div class="card bg-info text-white mb-3">
+            <div class="card-body">
+                <h6>Total Merchants</h6>
+                <h3>{{ $totalMerchants }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-secondary text-white mb-3">
+            <div class="card-body">
+                <h6>🪙 Total Allocated Balance</h6>
+                <h3>{{ number_format($totalAllocated, 2) }} BDT</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white mb-3">
+            <div class="card-body">
+                <h6>✅ Successful Payouts</h6>
+                <h3>{{ $successCount }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-danger text-white mb-3">
+            <div class="card-body">
+                <h6>❌ Failed Payouts</h6>
+                <h3>{{ $failedCount }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+
+
+
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-light fw-bold">Payout Status (Count)</div>
+            <div class="card-body">
+                <canvas id="payoutPieChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-light fw-bold">Payout Amounts</div>
+            <div class="card-body">
+                <canvas id="payoutBarChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@endsection
+
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const successCount = {{ $successCount }};
+    const failedCount = {{ $failedCount }};
+    const successAmount = {{ $successAmount }};
+    const failedAmount = {{ $failedAmount }};
+
+    const ctx1 = document.getElementById('payoutPieChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'pie',
+        data: {
+            labels: ['Success', 'Failed'],
+            datasets: [{
+                label: 'Payout Count',
+                data: [successCount, failedCount],
+                backgroundColor: ['#198754', '#dc3545']
+            }]
+        }
+    });
+
+    const ctx2 = document.getElementById('payoutBarChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Success Amount', 'Failed Amount'],
+            datasets: [{
+                label: 'Amount in BDT',
+                data: [successAmount, failedAmount],
+                backgroundColor: ['#0d6efd', '#ffc107']
+            }]
+        }
+    });
+</script>
+@endsection
+
+
+

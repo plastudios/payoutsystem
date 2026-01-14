@@ -1,0 +1,704 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Payout API Documentation",
+        "description": "API documentation for MFS and Bank Payout System",
+        "contact": {
+            "email": "support@faastpay.xyz"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://payoutsystem.faastpay.xyz"
+        },
+        {
+            "url": "https://payoutsystem.faastpay.xyz"
+        }
+    ],
+    "paths": {
+        "/api/merchant/mfs-payouts": {
+            "post": {
+                "tags": [
+                    "MFS Payouts"
+                ],
+                "summary": "Create a new MFS payout batch",
+                "operationId": "9eda1c0229582ab9ca70b9b53126b2c5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "merchant_id": {
+                                        "type": "string",
+                                        "example": "faastpay"
+                                    },
+                                    "batch_id": {
+                                        "type": "string",
+                                        "example": "MFS-ABC123XYZ"
+                                    },
+                                    "payouts": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "reference_key": {
+                                                    "type": "string",
+                                                    "example": "MFS-REF001"
+                                                },
+                                                "wallet_number": {
+                                                    "type": "string",
+                                                    "example": "01712345678"
+                                                },
+                                                "amount": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 100
+                                                },
+                                                "method": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "bKash",
+                                                        "Nagad"
+                                                    ]
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Batch created successfully"
+                    },
+                    "400": {
+                        "description": "Insufficient balance"
+                    },
+                    "422": {
+                        "description": "Validation errors"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/merchant/mfs-payouts/batch/{batchId}": {
+            "get": {
+                "tags": [
+                    "MFS Payouts"
+                ],
+                "summary": "Fetch MFS payout batch details by Batch ID",
+                "description": "Returns list of MFS payouts for the given batch ID",
+                "operationId": "0c9df7167b3a107802c05c30f7bd65c9",
+                "parameters": [
+                    {
+                        "name": "batchId",
+                        "in": "path",
+                        "description": "The batch ID of the MFS payouts to fetch",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "MFS-ABC123XYZ"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Batch details fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "batch_id": {
+                                            "type": "string",
+                                            "example": "MFS-ABC123XYZ"
+                                        },
+                                        "total_count": {
+                                            "type": "integer",
+                                            "example": 3
+                                        },
+                                        "total_amount": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 300
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "reference_key": {
+                                                        "type": "string",
+                                                        "example": "MFS-REF001"
+                                                    },
+                                                    "wallet_number": {
+                                                        "type": "string",
+                                                        "example": "01712345678"
+                                                    },
+                                                    "amount": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 100
+                                                    },
+                                                    "method": {
+                                                        "type": "string",
+                                                        "example": "bkash"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "Pending"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Batch not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No data found for this batch ID."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/merchant/mfs-payouts/reference/{referenceKey}": {
+            "get": {
+                "tags": [
+                    "MFS Payouts"
+                ],
+                "summary": "Fetch single payout by reference key",
+                "operationId": "50243c8615fab8e66f96d9f098d43561",
+                "parameters": [
+                    {
+                        "name": "referenceKey",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payout found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "reference_key": {
+                                                    "type": "string",
+                                                    "example": "MFS-REF001"
+                                                },
+                                                "wallet_number": {
+                                                    "type": "string",
+                                                    "example": "01712345678"
+                                                },
+                                                "amount": {
+                                                    "type": "number",
+                                                    "example": 100
+                                                },
+                                                "method": {
+                                                    "type": "string",
+                                                    "example": "bkash"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "Pending"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Payout not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/merchant/token": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Merchant Login - Get Bearer Token",
+                "operationId": "df461efdcc9e8203a7ae2ce8aa717751",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "merchant@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful login and token issued",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "your-bearer-token"
+                                        },
+                                        "merchant_id": {
+                                            "type": "string",
+                                            "example": "merchant123"
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Demo Merchant"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "merchant@example.com"
+                                                },
+                                                "merchant_id": {
+                                                    "type": "string",
+                                                    "example": "merchant123"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 401
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid credentials"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 422
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/payouts": {
+            "post": {
+                "tags": [
+                    "Bank Payouts"
+                ],
+                "summary": "Create a new Bank Payout Batch",
+                "operationId": "160af7702b43c9be78c50a5c13d47eee",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "merchant_id",
+                                    "batch_id",
+                                    "payouts"
+                                ],
+                                "properties": {
+                                    "merchant_id": {
+                                        "type": "string",
+                                        "example": "faastpay"
+                                    },
+                                    "batch_id": {
+                                        "type": "string",
+                                        "example": "BANK-ABC123XYZ"
+                                    },
+                                    "payouts": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "referenceKey": {
+                                                    "type": "string",
+                                                    "example": "BANK-REF001"
+                                                },
+                                                "amount": {
+                                                    "type": "number",
+                                                    "example": 500
+                                                },
+                                                "currency": {
+                                                    "type": "string",
+                                                    "example": "BDT"
+                                                },
+                                                "remarks": {
+                                                    "type": "string",
+                                                    "example": "Vendor payment"
+                                                },
+                                                "bankCode": {
+                                                    "type": "string",
+                                                    "example": "011"
+                                                },
+                                                "bankShortCode": {
+                                                    "type": "string",
+                                                    "example": "DBBL"
+                                                },
+                                                "benType": {
+                                                    "type": "string",
+                                                    "example": "individual"
+                                                },
+                                                "txnChannel": {
+                                                    "type": "string",
+                                                    "example": "BEFTN"
+                                                },
+                                                "beneficiaryAcc": {
+                                                    "type": "string",
+                                                    "example": "123456789"
+                                                },
+                                                "beneficiaryName": {
+                                                    "type": "string",
+                                                    "example": "John Doe"
+                                                },
+                                                "beneficiaryEmail": {
+                                                    "type": "string",
+                                                    "example": "john@example.com"
+                                                },
+                                                "routingNumber": {
+                                                    "type": "string",
+                                                    "example": "123456789"
+                                                },
+                                                "txnChannelCode": {
+                                                    "type": "string",
+                                                    "example": "beftn"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Payouts created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Payouts created for batch: BANK-ABC123XYZ"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Insufficient balance"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/merchant/payouts/batch/{batch_id}": {
+            "get": {
+                "tags": [
+                    "Bank Payouts"
+                ],
+                "summary": "Fetch all payouts under a given batch ID",
+                "operationId": "b7b795f2ff336a2408ffa13f36168ead",
+                "parameters": [
+                    {
+                        "name": "batch_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Batch details fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "batch_id": {
+                                            "type": "string",
+                                            "example": "BANK-ABC123XYZ"
+                                        },
+                                        "total_count": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "total_amount": {
+                                            "type": "number",
+                                            "example": 1000
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Batch not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/merchant/payouts/reference/{referenceKey}": {
+            "get": {
+                "tags": [
+                    "Bank Payouts"
+                ],
+                "summary": "Fetch a single payout using the reference key",
+                "operationId": "2d27b1045f98b0f730e4e0efbb5a78fc",
+                "parameters": [
+                    {
+                        "name": "referenceKey",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payout found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "referenceKey": {
+                                                    "type": "string",
+                                                    "example": "BANK-REF001"
+                                                },
+                                                "amount": {
+                                                    "type": "number",
+                                                    "example": 500
+                                                },
+                                                "currency": {
+                                                    "type": "string",
+                                                    "example": "BDT"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "Pending"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Payout not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Endpoints for login and token"
+        },
+        {
+            "name": "MFS Payouts",
+            "description": "Endpoints for MFS payout operations"
+        },
+        {
+            "name": "Bank Payouts",
+            "description": "Endpoints for Bank payout operations"
+        }
+    ]
+}
