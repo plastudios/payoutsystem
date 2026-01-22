@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -58,9 +59,17 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         /* Navigation Links */
@@ -129,6 +138,7 @@
                 opacity: 0;
                 transform: translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -213,11 +223,30 @@
             margin-left: 8px;
         }
 
-        .role-admin { background: var(--secondary-gradient); color: white; }
-        .role-author { background: var(--success-gradient); color: white; }
-        .role-checker { background: var(--warning-gradient); color: white; }
-        .role-maker { background: var(--dark-gradient); color: white; }
-        .role-merchant { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: white; }
+        .role-admin {
+            background: var(--secondary-gradient);
+            color: white;
+        }
+
+        .role-author {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .role-checker {
+            background: var(--warning-gradient);
+            color: white;
+        }
+
+        .role-maker {
+            background: var(--dark-gradient);
+            color: white;
+        }
+
+        .role-merchant {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: white;
+        }
 
         /* Content Area */
         .content-wrapper {
@@ -234,12 +263,12 @@
                 border-radius: 15px;
                 margin-top: 15px;
             }
-            
+
             .nav-pills-custom .nav-link {
                 margin: 5px 0;
                 text-align: center;
             }
-            
+
             .dropdown-menu-custom {
                 position: static !important;
                 transform: none !important;
@@ -291,7 +320,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Ripple Effect */
@@ -303,6 +334,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Enhanced Navbar -->
     <nav class="navbar navbar-expand-lg navbar-custom">
@@ -310,8 +342,9 @@
             <a class="navbar-brand" href="/dashboard">
                 <i class="fas fa-wallet"></i> Payout
             </a>
-            
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" style="color: white;">
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                style="color: white;">
                 <i class="fas fa-bars"></i>
             </button>
 
@@ -325,142 +358,176 @@
                     </li>
 
                     @if(auth()->check() && in_array(auth()->user()->role, ['checker', 'admin']))
-                    <li class="nav-item">
-                        <a class="nav-link {{ Request::is('payouts/to-check') ? 'active' : '' }}" href="{{ route('payouts.to_check') }}">
-                            <i class="fas fa-search"></i> To Check
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Request::is('payouts/to-check') ? 'active' : '' }}"
+                                href="{{ route('payouts.to_check') }}">
+                                <i class="fas fa-search"></i> To Check
+                            </a>
+                        </li>
                     @endif
 
                     @if(auth()->check() && in_array(auth()->user()->role, ['maker', 'admin']))
-                    <li class="nav-item">
-                        <a class="nav-link {{ Request::is('payouts/to-approve') ? 'active' : '' }}" href="{{ route('payouts.to_approve') }}">
-                            <i class="fas fa-check-circle"></i> To Approve
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Request::is('payouts/to-approve') ? 'active' : '' }}"
+                                href="{{ route('payouts.to_approve') }}">
+                                <i class="fas fa-check-circle"></i> To Approve
+                            </a>
+                        </li>
                     @endif
 
                     @if(auth()->check() && in_array(auth()->user()->role, ['author', 'admin', 'merchant']))
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-money-bill-wave"></i> Payout
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-custom">
-                            <li><h6 class="dropdown-header dropdown-header-custom"><i class="fas fa-university"></i> Bank Operations</h6></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="/payout/create">
-                                <i class="fas fa-plus-circle"></i> Create Payout
-                            </a></li>
-                            
-                            <li><hr class="dropdown-divider dropdown-divider-custom"></li>
-                            
-                            <li><h6 class="dropdown-header dropdown-header-custom"><i class="fas fa-mobile-alt"></i> MFS Operations</h6></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="/mfs-payout/upload">
-                                <i class="fas fa-upload"></i> Create Payout (MFS)
-                            </a></li>
-                            @if(auth()->check() && in_array(auth()->user()->role, ['author', 'admin']))
-                            <li><a class="dropdown-item dropdown-item-custom" href="/mfs-payout/ExportBatches">
-                                <i class="fas fa-download"></i> Export Batch
-                            </a></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="/mfs-payout/status-upload">
-                                <i class="fas fa-cloud-upload-alt"></i> Upload Status Details
-                            </a></li>
-                            @endif
-                        </ul>
-                    </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-money-bill-wave"></i> Payout
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-custom">
+                                <li>
+                                    <h6 class="dropdown-header dropdown-header-custom"><i class="fas fa-university"></i>
+                                        Bank Operations</h6>
+                                </li>
+                                <li><a class="dropdown-item dropdown-item-custom" href="/payout/create">
+                                        <i class="fas fa-plus-circle"></i> Create Payout
+                                    </a></li>
+
+                                <li>
+                                    <hr class="dropdown-divider dropdown-divider-custom">
+                                </li>
+
+                                <li>
+                                    <h6 class="dropdown-header dropdown-header-custom"><i class="fas fa-mobile-alt"></i> MFS
+                                        Operations</h6>
+                                </li>
+                                <li><a class="dropdown-item dropdown-item-custom" href="/mfs-payout/upload">
+                                        <i class="fas fa-upload"></i> Create Payout (MFS)
+                                    </a></li>
+                                @if(auth()->check() && in_array(auth()->user()->role, ['author', 'admin']))
+                                    <li><a class="dropdown-item dropdown-item-custom" href="/mfs-payout/ExportBatches">
+                                            <i class="fas fa-download"></i> Export Batch
+                                        </a></li>
+                                    <li><a class="dropdown-item dropdown-item-custom" href="/mfs-payout/status-upload">
+                                            <i class="fas fa-cloud-upload-alt"></i> Upload Status Details
+                                        </a></li>
+                                @endif
+                            </ul>
+                        </li>
                     @endif
 
                     @if(auth()->check() && in_array(auth()->user()->role, ['author', 'admin', 'merchant']))
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-chart-line"></i> Reports
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-custom">
-                            <li><h6 class="dropdown-header dropdown-header-custom"><i class="fas fa-university"></i> Bank Reports</h6></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="/payout/report">
-                                <i class="fas fa-file-alt"></i> Payout Report
-                            </a></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="/payout/details">
-                                <i class="fas fa-list-alt"></i> Payout Details
-                            </a></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="/payout/batches">
-                                <i class="fas fa-layer-group"></i> Batch Details
-                            </a></li>
-                            
-                            <li><hr class="dropdown-divider dropdown-divider-custom"></li>
-                            
-                            <li><h6 class="dropdown-header dropdown-header-custom"><i class="fas fa-mobile-alt"></i> MFS Reports</h6></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="/mfs-payout/all">
-                                <i class="fas fa-list"></i> Payout Details
-                            </a></li>
-                            @if(auth()->check() && in_array(auth()->user()->role, ['author', 'admin']))
-                            <li><a class="dropdown-item dropdown-item-custom" href="/mfs-payout/payout-summary">
-                                <i class="fas fa-chart-pie"></i> Payout Summary
-                            </a></li>
-                            @endif
-                            <li><a class="dropdown-item dropdown-item-custom" href="/mfs-payout/batches">
-                                <i class="fas fa-layer-group"></i> Batch Details
-                            </a></li>
-                        </ul>
-                    </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-chart-line"></i> Reports
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-custom">
+                                <li>
+                                    <h6 class="dropdown-header dropdown-header-custom"><i class="fas fa-university"></i>
+                                        Bank Reports</h6>
+                                </li>
+                                <li><a class="dropdown-item dropdown-item-custom" href="/payout/report">
+                                        <i class="fas fa-file-alt"></i> Payout Report
+                                    </a></li>
+                                <li><a class="dropdown-item dropdown-item-custom" href="/payout/details">
+                                        <i class="fas fa-list-alt"></i> Payout Details
+                                    </a></li>
+                                <li><a class="dropdown-item dropdown-item-custom" href="/payout/batches">
+                                        <i class="fas fa-layer-group"></i> Batch Details
+                                    </a></li>
+
+                                <li>
+                                    <hr class="dropdown-divider dropdown-divider-custom">
+                                </li>
+
+                                <li>
+                                    <h6 class="dropdown-header dropdown-header-custom"><i class="fas fa-mobile-alt"></i> MFS
+                                        Reports</h6>
+                                </li>
+                                <li><a class="dropdown-item dropdown-item-custom" href="/mfs-payout/all">
+                                        <i class="fas fa-list"></i> Payout Details
+                                    </a></li>
+                                @if(auth()->check() && in_array(auth()->user()->role, ['author', 'admin']))
+                                    <li><a class="dropdown-item dropdown-item-custom" href="/mfs-payout/payout-summary">
+                                            <i class="fas fa-chart-pie"></i> Payout Summary
+                                        </a></li>
+                                @endif
+                                <li><a class="dropdown-item dropdown-item-custom" href="/mfs-payout/batches">
+                                        <i class="fas fa-layer-group"></i> Batch Details
+                                    </a></li>
+
+                                <li>
+                                    <hr class="dropdown-divider dropdown-divider-custom">
+                                </li>
+
+                                <li>
+                                    <h6 class="dropdown-header dropdown-header-custom"><i class="fas fa-wallet"></i> Balance
+                                        Reports</h6>
+                                </li>
+                                <li><a class="dropdown-item dropdown-item-custom" href="/merchant/balance/details">
+                                        <i class="fas fa-chart-bar"></i> Balance Details
+                                    </a></li>
+                            </ul>
+                        </li>
                     @endif
 
                     @if(auth()->check() && in_array(auth()->user()->role, ['author', 'admin', 'merchant']))
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-cogs"></i> Settings
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-custom">
-                            @if(auth()->check() && in_array(auth()->user()->role, ['author', 'admin']))
-                            <li><a class="dropdown-item dropdown-item-custom" href="/fi/list">
-                                <i class="fas fa-building"></i> FI List
-                            </a></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="/merchants">
-                                <i class="fas fa-store"></i> Merchants
-                            </a></li>
-                            @endif
-                            
-                            @if(auth()->check() && auth()->user()->role === 'admin')
-                            <li><a class="dropdown-item dropdown-item-custom" href="/admin/create-user">
-                                <i class="fas fa-user-plus"></i> Create User
-                            </a></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="/admin/users">
-                                <i class="fas fa-users"></i> User List
-                            </a></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="{{ route('admin.webhook.logs') }}">
-                                <i class="fas fa-webhook"></i> Webhook Logs
-                            </a></li>
-                            @endif
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-cogs"></i> Settings
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-custom">
+                                @if(auth()->check() && in_array(auth()->user()->role, ['author', 'admin']))
+                                    <li><a class="dropdown-item dropdown-item-custom" href="/fi/list">
+                                            <i class="fas fa-building"></i> FI List
+                                        </a></li>
+                                    <li><a class="dropdown-item dropdown-item-custom" href="/merchants">
+                                            <i class="fas fa-store"></i> Merchants
+                                        </a></li>
+                                @endif
 
-                            @if(auth()->user()->role === 'merchant')
-                            <li><a class="dropdown-item dropdown-item-custom" href="{{ route('merchant.webhook.edit') }}">
-                                <i class="fas fa-webhook"></i> Webhook Settings
-                            </a></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="{{ route('merchant.webhook.logs') }}">
-                                <i class="fas fa-list"></i> Webhook Logs
-                            </a></li>
-                            <li><hr class="dropdown-divider dropdown-divider-custom"></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="/merchant/balance/details">
-                                <i class="fas fa-info-circle"></i> Balance Details
-                            </a></li>
-                            @endif
-                        </ul>
-                    </li>
+                                @if(auth()->check() && auth()->user()->role === 'admin')
+                                    <li><a class="dropdown-item dropdown-item-custom" href="/admin/create-user">
+                                            <i class="fas fa-user-plus"></i> Create User
+                                        </a></li>
+                                    <li><a class="dropdown-item dropdown-item-custom" href="/admin/users">
+                                            <i class="fas fa-users"></i> User List
+                                        </a></li>
+                                    <li><a class="dropdown-item dropdown-item-custom" href="{{ route('admin.webhook.logs') }}">
+                                            <i class="fas fa-webhook"></i> Webhook Logs
+                                        </a></li>
+                                @endif
+
+                                @if(auth()->user()->role === 'merchant')
+                                    <li><a class="dropdown-item dropdown-item-custom"
+                                            href="{{ route('merchant.webhook.edit') }}">
+                                            <i class="fas fa-webhook"></i> Webhook Settings
+                                        </a></li>
+                                    <li><a class="dropdown-item dropdown-item-custom"
+                                            href="{{ route('merchant.webhook.logs') }}">
+                                            <i class="fas fa-list"></i> Webhook Logs
+                                        </a></li>
+                                    <li>
+                                        <hr class="dropdown-divider dropdown-divider-custom">
+                                    </li>
+                                    <li><a class="dropdown-item dropdown-item-custom" href="/merchant/balance/details">
+                                            <i class="fas fa-info-circle"></i> Balance Details
+                                        </a></li>
+                                @endif
+                            </ul>
+                        </li>
                     @endif
 
                     @if(auth()->check() && in_array(auth()->user()->role, ['author', 'admin']))
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-wallet"></i> Balance
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-custom">
-                            <li><a class="dropdown-item dropdown-item-custom" href="{{ route('merchant.balance') }}">
-                                <i class="fas fa-coins"></i> Merchant Balance
-                            </a></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="/merchant-balances">
-                                <i class="fas fa-history"></i> Balance History
-                            </a></li>
-                        </ul>
-                    </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-wallet"></i> Balance
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-custom">
+                                <li><a class="dropdown-item dropdown-item-custom" href="{{ route('merchant.balance') }}">
+                                        <i class="fas fa-coins"></i> Merchant Balance
+                                    </a></li>
+                                <li><a class="dropdown-item dropdown-item-custom" href="/merchant-balances">
+                                        <i class="fas fa-history"></i> Balance History
+                                    </a></li>
+                            </ul>
+                        </li>
                     @endif
 
                     <li class="nav-item">
@@ -473,30 +540,37 @@
                 <!-- User Profile -->
                 <ul class="navbar-nav">
                     @auth
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle user-dropdown" href="#" role="button" data-bs-toggle="dropdown">
-                            <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
-                            <span>{{ auth()->user()->name }}</span>
-                            <span class="role-badge role-{{ auth()->user()->role }}">{{ ucfirst(auth()->user()->role) }}</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
-                            <li><a class="dropdown-item dropdown-item-custom" href="#" onclick="alert('Profile page not implemented yet')">
-                                <i class="fas fa-user-circle"></i> Profile
-                            </a></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="#" onclick="alert('Settings page not implemented yet')">
-                                <i class="fas fa-cog"></i> Account Settings
-                            </a></li>
-                            <li><hr class="dropdown-divider dropdown-divider-custom"></li>
-                            <li>
-                                <form method="POST" action="{{ url('/logout') }}" style="margin: 0;">
-                                    @csrf
-                                    <button class="dropdown-item dropdown-item-custom" type="submit" style="background: none; border: none; width: 100%; text-align: left;">
-                                        <i class="fas fa-sign-out-alt"></i> Logout
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle user-dropdown" href="#" role="button"
+                                data-bs-toggle="dropdown">
+                                <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+                                <span>{{ auth()->user()->name }}</span>
+                                <span
+                                    class="role-badge role-{{ auth()->user()->role }}">{{ ucfirst(auth()->user()->role) }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
+                                <li><a class="dropdown-item dropdown-item-custom" href="#"
+                                        onclick="alert('Profile page not implemented yet')">
+                                        <i class="fas fa-user-circle"></i> Profile
+                                    </a></li>
+                                <li><a class="dropdown-item dropdown-item-custom" href="#"
+                                        onclick="alert('Settings page not implemented yet')">
+                                        <i class="fas fa-cog"></i> Account Settings
+                                    </a></li>
+                                <li>
+                                    <hr class="dropdown-divider dropdown-divider-custom">
+                                </li>
+                                <li>
+                                    <form method="POST" action="{{ url('/logout') }}" style="margin: 0;">
+                                        @csrf
+                                        <button class="dropdown-item dropdown-item-custom" type="submit"
+                                            style="background: none; border: none; width: 100%; text-align: left;">
+                                            <i class="fas fa-sign-out-alt"></i> Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
                     @endauth
                 </ul>
             </div>
@@ -525,11 +599,11 @@
 
     <script>
         // Enhanced JavaScript functionality
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Dynamic menu highlighting based on current page
             const currentPath = window.location.pathname;
             const navLinks = document.querySelectorAll('.nav-link');
-            
+
             navLinks.forEach(link => {
                 const href = link.getAttribute('href');
                 if (href && currentPath.includes(href.replace(/^\//, ''))) {
@@ -541,13 +615,13 @@
 
             // Add ripple effect to nav links
             document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', function(e) {
+                link.addEventListener('click', function (e) {
                     const ripple = document.createElement('span');
                     const rect = this.getBoundingClientRect();
                     const size = Math.max(rect.width, rect.height);
                     const x = e.clientX - rect.left - size / 2;
                     const y = e.clientY - rect.top - size / 2;
-                    
+
                     ripple.style.cssText = `
                         position: absolute;
                         width: ${size}px;
@@ -560,18 +634,18 @@
                         animation: ripple 0.6s linear;
                         pointer-events: none;
                     `;
-                    
+
                     this.style.position = 'relative';
                     this.style.overflow = 'hidden';
                     this.appendChild(ripple);
-                    
+
                     setTimeout(() => ripple.remove(), 600);
                 });
             });
 
             // Smooth dropdown animations
             document.querySelectorAll('.dropdown').forEach(dropdown => {
-                dropdown.addEventListener('show.bs.dropdown', function() {
+                dropdown.addEventListener('show.bs.dropdown', function () {
                     this.querySelector('.dropdown-menu').style.animationName = 'slideDown';
                 });
             });
@@ -581,4 +655,5 @@
     @yield('scripts')
     @stack('scripts')
 </body>
+
 </html>

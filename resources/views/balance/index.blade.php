@@ -13,18 +13,19 @@
 
     <form action="{{ route('merchant.balance.store') }}" method="POST" class="row g-3 mb-4">
         @csrf
-        <div class="col-md-3">
+        <div class="col-md-2">
             <label class="form-label">Merchant</label>
             <select name="merchant_id" class="form-control" required>
                 <option value="">-- Select Merchant --</option>
                 @foreach($merchants as $merchant)
-                    <option value="{{ $merchant->merchant_id }}">{{ $merchant->merchant_id }} ({{ $merchant->company_name }})</option>
+                    <option value="{{ $merchant->merchant_id }}">{{ $merchant->merchant_id }} ({{ $merchant->company_name }})
+                    </option>
                 @endforeach
             </select>
         </div>
         <div class="col-md-2">
             <label class="form-label">Type</label>
-            <select name="type" class="form-control" required>
+            <select name="type" id="balance-type" class="form-control" required>
                 <option value="credit">Credit</option>
                 <option value="debit">Debit</option>
             </select>
@@ -33,7 +34,12 @@
             <label class="form-label">Amount</label>
             <input type="number" name="amount" step="0.01" class="form-control" required>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2" id="charge-field">
+            <label class="form-label">Payout Charge (%)</label>
+            <input type="number" name="payout_charge" step="0.01" min="0" max="100" class="form-control" value="0"
+                placeholder="e.g. 0.7">
+        </div>
+        <div class="col-md-2">
             <label class="form-label">Remarks</label>
             <input type="text" name="remarks" class="form-control">
         </div>
@@ -42,30 +48,36 @@
         </div>
     </form>
 
+    <script>
+        document.getElementById('balance-type').addEventListener('change', function () {
+            document.getElementById('charge-field').style.display = this.value === 'credit' ? 'block' : 'none';
+        });
+    </script>
+
     <h4>📊 Merchant Summary</h4>
 
     <table class="table table-bordered table-striped">
-    <thead class="table-dark">
-        <tr>
-            <th>Merchant ID</th>
-            <th>Company Name</th>
-            <th>Total Credit</th>
-            <th>Total Debit</th>
-            <th>Available Balance</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($summary as $row)
+        <thead class="table-dark">
             <tr>
-                <td>{{ $row['merchant_id'] }}</td>
-                <td>{{ $row['company_name'] }}</td>
-                <td>{{ number_format($row['credit'], 2) }}</td>
-                <td class="text-warning">{{ number_format($row['debit'], 2) }}</td>
-                <td class="text-success"><strong>{{ number_format($row['available'], 2) }}</strong></td>
+                <th>Merchant ID</th>
+                <th>Company Name</th>
+                <th>Total Credit</th>
+                <th>Total Debit</th>
+                <th>Available Balance</th>
             </tr>
-        @endforeach
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach($summary as $row)
+                <tr>
+                    <td>{{ $row['merchant_id'] }}</td>
+                    <td>{{ $row['company_name'] }}</td>
+                    <td>{{ number_format($row['credit'], 2) }}</td>
+                    <td class="text-warning">{{ number_format($row['debit'], 2) }}</td>
+                    <td class="text-success"><strong>{{ number_format($row['available'], 2) }}</strong></td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
 @endsection
 
 @push('scripts')

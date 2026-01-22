@@ -38,26 +38,34 @@ class BalanceController extends Controller
     public function showAll(Request $request)
     {
         $request->validate([
-            'start_date'  => 'nullable|date',
-            'end_date'    => 'nullable|date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
             'merchant_id' => 'nullable|string',
         ]);
 
+        $user = auth()->user();
         $q = MerchantBalance::query();
 
-        // Merchant filter
-        $merchantId = $request->input('merchant_id');
-        if ($merchantId && $merchantId !== 'all') {
+        // Merchant filter - if user is a merchant, force their merchant_id
+        if ($user->role === 'merchant') {
+            $merchantId = $user->merchant_id;
             $q->where('merchant_id', $merchantId);
+        } else {
+            // For admin/other roles, allow filtering
+            $merchantId = $request->input('merchant_id');
+            if ($merchantId && $merchantId !== 'all') {
+                $q->where('merchant_id', $merchantId);
+            }
         }
 
         // Date range (inclusive)
         $start = $request->filled('start_date') ? Carbon::parse($request->start_date)->startOfDay() : null;
-        $end   = $request->filled('end_date')   ? Carbon::parse($request->end_date)->endOfDay()   : null;
+        $end = $request->filled('end_date') ? Carbon::parse($request->end_date)->endOfDay() : null;
 
         if ($start && $end) {
             // if user swapped dates, fix it
-            if ($end->lt($start)) [$start, $end] = [$end, $start];
+            if ($end->lt($start))
+                [$start, $end] = [$end, $start];
             $q->whereBetween('created_at', [$start, $end]);
         } elseif ($start) {
             $q->where('created_at', '>=', $start);
@@ -75,38 +83,39 @@ class BalanceController extends Controller
         $merchants = MerchantBalance::select('merchant_id')->distinct()->orderBy('merchant_id')->pluck('merchant_id');
 
         return view('admin.balance_history', [
-            'balances'    => $balances,
-            'merchants'   => $merchants,
-            'merchantId'  => $merchantId,
-            'start'       => $request->start_date,
-            'end'         => $request->end_date,
+            'balances' => $balances,
+            'merchants' => $merchants,
+            'merchantId' => $merchantId,
+            'start' => $request->start_date,
+            'end' => $request->end_date,
+            'isMerchant' => $user->role === 'merchant', // Pass this to the view
         ]);
     }
     public function index()
     {
         $merchants = Merchant::all();
-    
+
         // Get total credits and debits per merchant from merchant_balances table
         $credits = MerchantBalance::where('type', 'credit')
             ->selectRaw('merchant_id, SUM(amount) as total_credit')
             ->groupBy('merchant_id')
             ->pluck('total_credit', 'merchant_id');
-    
+
         $debits = MerchantBalance::where('type', 'debit')
             ->selectRaw('merchant_id, SUM(amount) as total_debit')
             ->groupBy('merchant_id')
             ->pluck('total_debit', 'merchant_id');
-    
+
         // Prepare summary from only merchant_balances table
         $summary = [];
-    
+
         foreach ($merchants as $merchant) {
             $id = $merchant->merchant_id;
-    
+
             $credit = $credits[$id] ?? 0;
             $debit = $debits[$id] ?? 0;
             $available = $credit - $debit;
-    
+
             $summary[] = [
                 'merchant_id' => $id,
                 'company_name' => $merchant->company_name,
@@ -116,26 +125,52 @@ class BalanceController extends Controller
                 'available' => $available,
             ];
         }
-    
+
         return view('balance.index', compact('summary', 'merchants'));
     }
-    
-    public function BalanceDetails(){
+
+    public function BalanceDetails(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+        ]);
+
         $user = auth()->user();
-        // Only allow merchants to view their own data
+
+        // Build query based on user role
         if ($user->role === 'merchant') {
-            $balances = MerchantBalance::where('merchant_id', $user->merchant_id)
-                ->latest()
-                ->get();
+            $q = MerchantBalance::where('merchant_id', $user->merchant_id);
         } else {
             // Admins or others can see all data
-            $balances = MerchantBalance::latest()->get();
+            $q = MerchantBalance::query();
         }
 
-        return view('merchants.balance_details', compact('balances'));
+        // Date range filtering (inclusive)
+        $start = $request->filled('start_date') ? Carbon::parse($request->start_date)->startOfDay() : null;
+        $end = $request->filled('end_date') ? Carbon::parse($request->end_date)->endOfDay() : null;
+
+        if ($start && $end) {
+            // if user swapped dates, fix it
+            if ($end->lt($start))
+                [$start, $end] = [$end, $start];
+            $q->whereBetween('created_at', [$start, $end]);
+        } elseif ($start) {
+            $q->where('created_at', '>=', $start);
+        } elseif ($end) {
+            $q->where('created_at', '<=', $end);
+        }
+
+        $balances = $q->latest()->get();
+
+        return view('merchants.balance_details', [
+            'balances' => $balances,
+            'start' => $request->start_date,
+            'end' => $request->end_date,
+        ]);
     }
-    
-    
+
+
 
 
 
@@ -148,32 +183,48 @@ class BalanceController extends Controller
             'type' => 'required|in:credit,debit',
             'amount' => 'required|numeric|min:0.01',
             'remarks' => 'nullable|string',
+            'payout_charge' => 'nullable|numeric|min:0|max:100',
         ]);
-    
+
         $merchantId = $request->merchant_id;
         $type = $request->type;
         $amount = $request->amount;
-    
+        $payoutCharge = $request->payout_charge ?? 0;
+
         if ($type == 'debit') {
             $entries = MerchantBalance::where('merchant_id', $merchantId)->get();
-        
+
             $totalBalance = $entries->sum(function ($entry) {
                 return $entry->type === 'credit' ? $entry->amount : -$entry->amount;
             });
-        
+
             if ($amount > $totalBalance) {
                 return back()->with('error', "Insufficient balance. Available: " . number_format($totalBalance, 2));
             }
         }
-        
-    
+
+        // Create the main credit/debit entry
         MerchantBalance::create([
             'merchant_id' => $merchantId,
             'type' => $type,
             'amount' => $amount,
             'remarks' => $request->remarks,
         ]);
-    
+
+        // If credit with payout charge, create a debit entry for the charge
+        if ($type === 'credit' && $payoutCharge > 0) {
+            $chargeAmount = round($amount * ($payoutCharge / 100), 2);
+
+            MerchantBalance::create([
+                'merchant_id' => $merchantId,
+                'type' => 'debit',
+                'amount' => $chargeAmount,
+                'remarks' => "Payout Charge ({$payoutCharge}%)",
+            ]);
+
+            return back()->with('success', "Balance credited: " . number_format($amount, 2) . ". Payout charge deducted: " . number_format($chargeAmount, 2));
+        }
+
         return back()->with('success', 'Balance updated successfully.');
     }
 
