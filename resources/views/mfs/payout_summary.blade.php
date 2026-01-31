@@ -397,6 +397,12 @@
     }
 
     /* Responsive */
+    @media (max-width: 992px) {
+        .kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
     @media (max-width: 768px) {
         .filter-card, .table-card {
             padding: 16px;
@@ -410,6 +416,10 @@
         .page-header h2 {
             font-size: 1.5rem;
         }
+
+        .page-subtitle {
+            font-size: 0.8rem;
+        }
         
         .kpi-grid {
             grid-template-columns: 1fr;
@@ -422,6 +432,99 @@
         
         .kpi-card .kpi-value {
             font-size: 1.5rem;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+        }
+
+        .filter-header h5 {
+            font-size: 1rem;
+        }
+
+        /* Make buttons stack on mobile */
+        .d-flex.gap-2 {
+            flex-direction: column;
+            gap: 8px !important;
+        }
+
+        .d-flex.gap-2 .btn {
+            width: 100%;
+        }
+
+        /* Improve table readability on mobile */
+        .table {
+            font-size: 0.75rem;
+        }
+
+        .table thead th {
+            font-size: 0.7rem;
+            padding: 8px;
+        }
+
+        .table tbody td {
+            padding: 8px;
+        }
+
+        pre {
+            font-size: 0.65rem;
+            max-height: 80px;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+        }
+
+        /* Improve DataTables mobile controls */
+        .dt-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .dt-button {
+            padding: 6px 12px !important;
+            font-size: 0.75rem !important;
+            margin-right: 0 !important;
+        }
+
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 12px;
+        }
+
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            font-size: 0.75rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .kpi-card .icon-wrapper {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        .kpi-card .kpi-value {
+            font-size: 1.25rem;
+        }
+
+        .kpi-card .kpi-label {
+            font-size: 0.8rem;
+        }
+
+        /* Stack filter form vertically on very small screens */
+        .filter-card .row.g-3 > div {
+            margin-bottom: 12px;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
     }
 
@@ -560,44 +663,46 @@
             <h5>Transaction Details</h5>
         </div>
         
-        <table class="table table-hover" id="payoutTable">
-            <thead>
-                <tr>
-                    <th>Batch ID</th>
-                    <th>Merchant</th>
-                    <th>Reference</th>
-                    <th>Amount</th>
-                    <th>Wallet</th>
-                    <th>Method</th>
-                    <th>Status</th>
-                    <th>API Response</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($payouts as $p)
+        <div class="table-responsive">
+            <table class="table table-hover" id="payoutTable">
+                <thead>
                     <tr>
-                        <td><strong>{{ $p->batch_id }}</strong></td>
-                        <td>{{ $p->merchant_id }}</td>
-                        <td><code>{{ $p->reference_key }}</code></td>
-                        <td><strong>{{ number_format($p->amount, 2) }}</strong> <small class="text-muted">BDT</small></td>
-                        <td>{{ $p->wallet_number }}</td>
-                        <td><span class="badge bg-light text-dark">{{ $p->method }}</span></td>
-                        <td>
-                            <span class="badge bg-{{ $p->status === 'Success' ? 'success' : ($p->status === 'Failed' ? 'danger' : 'secondary') }}">
-                                {{ $p->status }}
-                            </span>
-                        </td>
-                        @php $resp = json_decode($p->api_response, true); @endphp
-                        <td><pre>{{ json_encode($resp, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre></td>
-                        <td>
-                            <div>{{ \Carbon\Carbon::parse($p->created_at)->format('M d, Y') }}</div>
-                            <small class="text-muted">{{ \Carbon\Carbon::parse($p->created_at)->format('H:i') }}</small>
-                        </td>
+                        <th>Batch ID</th>
+                        <th>Merchant</th>
+                        <th>Reference</th>
+                        <th>Amount</th>
+                        <th>Wallet</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>API Response</th>
+                        <th>Date</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach($payouts as $p)
+                        <tr>
+                            <td><strong>{{ $p->batch_id }}</strong></td>
+                            <td>{{ $p->merchant_id }}</td>
+                            <td><code>{{ $p->reference_key }}</code></td>
+                            <td><strong>{{ number_format($p->amount, 2) }}</strong> <small class="text-muted">BDT</small></td>
+                            <td>{{ $p->wallet_number }}</td>
+                            <td><span class="badge bg-light text-dark">{{ $p->method }}</span></td>
+                            <td>
+                                <span class="badge bg-{{ $p->status === 'Success' ? 'success' : ($p->status === 'Failed' ? 'danger' : 'secondary') }}">
+                                    {{ $p->status }}
+                                </span>
+                            </td>
+                            @php $resp = json_decode($p->api_response, true); @endphp
+                            <td><pre>{{ json_encode($resp, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre></td>
+                            <td>
+                                <div>{{ \Carbon\Carbon::parse($p->created_at)->format('M d, Y') }}</div>
+                                <small class="text-muted">{{ \Carbon\Carbon::parse($p->created_at)->format('H:i') }}</small>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 @endsection
