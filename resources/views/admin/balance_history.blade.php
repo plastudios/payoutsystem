@@ -353,6 +353,20 @@
         }
 
         /* Responsive */
+        @media (max-width: 992px) {
+            .page-subtitle {
+                font-size: 0.8rem;
+            }
+
+            .table-stats {
+                flex-wrap: wrap;
+            }
+
+            .filter-card .row.g-3 > div {
+                margin-bottom: 12px;
+            }
+        }
+
         @media (max-width: 768px) {
 
             .filter-card,
@@ -369,6 +383,15 @@
                 font-size: 1.5rem;
             }
 
+            .page-subtitle {
+                font-size: 0.75rem;
+            }
+
+            .filter-header h5,
+            .table-title h5 {
+                font-size: 1rem;
+            }
+
             .table-header {
                 flex-direction: column;
                 align-items: flex-start;
@@ -377,11 +400,153 @@
 
             .table-stats {
                 gap: 12px;
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .stat-item {
+                flex: 1;
+            }
+
+            .stat-value {
+                font-size: 0.95rem;
+            }
+
+            .stat-label {
+                font-size: 0.65rem;
             }
 
             .btn {
                 padding: 8px 16px;
                 font-size: 0.8rem;
+            }
+
+            .d-flex.gap-2 {
+                flex-direction: column;
+                gap: 8px !important;
+            }
+
+            .d-flex.gap-2 .btn {
+                width: 100%;
+            }
+
+            /* Table improvements */
+            .table {
+                font-size: 0.75rem;
+            }
+
+            .table thead th {
+                font-size: 0.7rem;
+                padding: 8px;
+            }
+
+            .table tbody td {
+                padding: 8px;
+            }
+
+            .merchant-id {
+                font-size: 0.7rem;
+                padding: 3px 6px;
+            }
+
+            .type-badge {
+                font-size: 0.65rem;
+                padding: 4px 10px;
+            }
+
+            .amount-positive,
+            .amount-negative,
+            .amount-neutral {
+                font-size: 0.8rem;
+            }
+
+            .date-day {
+                font-size: 0.75rem;
+            }
+
+            .date-time {
+                font-size: 0.65rem;
+            }
+
+            /* DataTables mobile improvements */
+            .dt-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+                margin-bottom: 12px;
+            }
+
+            .dt-button {
+                padding: 6px 12px !important;
+                font-size: 0.75rem !important;
+                margin-right: 0 !important;
+            }
+
+            .dataTables_wrapper .dataTables_length,
+            .dataTables_wrapper .dataTables_filter {
+                margin-bottom: 12px;
+            }
+
+            .dataTables_wrapper .dataTables_info,
+            .dataTables_wrapper .dataTables_paginate {
+                font-size: 0.75rem;
+            }
+
+            .dataTables_length select,
+            .dataTables_filter input {
+                font-size: 0.75rem;
+                padding: 4px 8px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-header h2 {
+                font-size: 1.25rem;
+            }
+
+            .filter-header i,
+            .table-title i {
+                font-size: 0.9rem;
+            }
+
+            .table-stats {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .stat-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px;
+                background: #f8fafc;
+                border-radius: 8px;
+            }
+
+            .stat-value {
+                order: 2;
+            }
+
+            .stat-label {
+                order: 1;
+            }
+
+            /* Stack filter inputs vertically */
+            .filter-card .col-md-3,
+            .filter-card .col-md-6 {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .type-badge i,
+            .amount-positive i,
+            .amount-negative i {
+                font-size: 0.6rem;
             }
         }
 
@@ -508,62 +673,64 @@
                 </div>
             </div>
 
-            <table class="table table-hover" id="balanceTable">
-                <thead>
-                    <tr>
-                        <th>Merchant ID</th>
-                        <th>Transaction Type</th>
-                        <th>Amount</th>
-                        <th>Remarks</th>
-                        <th>Date & Time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($balances as $balance)
+            <div class="table-responsive">
+                <table class="table table-hover" id="balanceTable">
+                    <thead>
                         <tr>
-                            <td>
-                                <span class="merchant-id">{{ $balance->merchant_id }}</span>
-                            </td>
-                            <td>
-                                <span class="type-badge type-{{ strtolower($balance->type) }}">
-                                    @if(strtolower($balance->type) === 'credit')
-                                        <i class="fas fa-arrow-down me-1"></i>
-                                    @elseif(strtolower($balance->type) === 'debit')
-                                        <i class="fas fa-arrow-up me-1"></i>
-                                    @elseif(strtolower($balance->type) === 'allocated')
-                                        <i class="fas fa-plus me-1"></i>
-                                    @else
-                                        <i class="fas fa-edit me-1"></i>
-                                    @endif
-                                    {{ ucfirst($balance->type) }}
-                                </span>
-                            </td>
-                            <td>
-                                <span
-                                    class="amount-{{ strtolower($balance->type) === 'credit' ? 'positive' : (strtolower($balance->type) === 'debit' ? 'negative' : 'neutral') }}">
-                                    @if(strtolower($balance->type) === 'credit')
-                                        +{{ number_format($balance->amount, 2) }}
-                                    @elseif(strtolower($balance->type) === 'debit')
-                                        -{{ number_format($balance->amount, 2) }}
-                                    @else
-                                        {{ number_format($balance->amount, 2) }}
-                                    @endif
-                                    <small class="text-muted">BDT</small>
-                                </span>
-                            </td>
-                            <td>
-                                <span class="text-muted">{{ $balance->remarks ?: 'No remarks' }}</span>
-                            </td>
-                            <td>
-                                <div class="date-display">
-                                    <div class="date-day">{{ $balance->created_at->format('M d, Y') }}</div>
-                                    <div class="date-time">{{ $balance->created_at->format('H:i:s') }}</div>
-                                </div>
-                            </td>
+                            <th>Merchant ID</th>
+                            <th>Transaction Type</th>
+                            <th>Amount</th>
+                            <th>Remarks</th>
+                            <th>Date & Time</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach($balances as $balance)
+                            <tr>
+                                <td>
+                                    <span class="merchant-id">{{ $balance->merchant_id }}</span>
+                                </td>
+                                <td>
+                                    <span class="type-badge type-{{ strtolower($balance->type) }}">
+                                        @if(strtolower($balance->type) === 'credit')
+                                            <i class="fas fa-arrow-down me-1"></i>
+                                        @elseif(strtolower($balance->type) === 'debit')
+                                            <i class="fas fa-arrow-up me-1"></i>
+                                        @elseif(strtolower($balance->type) === 'allocated')
+                                            <i class="fas fa-plus me-1"></i>
+                                        @else
+                                            <i class="fas fa-edit me-1"></i>
+                                        @endif
+                                        {{ ucfirst($balance->type) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span
+                                        class="amount-{{ strtolower($balance->type) === 'credit' ? 'positive' : (strtolower($balance->type) === 'debit' ? 'negative' : 'neutral') }}">
+                                        @if(strtolower($balance->type) === 'credit')
+                                            +{{ number_format($balance->amount, 2) }}
+                                        @elseif(strtolower($balance->type) === 'debit')
+                                            -{{ number_format($balance->amount, 2) }}
+                                        @else
+                                            {{ number_format($balance->amount, 2) }}
+                                        @endif
+                                        <small class="text-muted">BDT</small>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ $balance->remarks ?: 'No remarks' }}</span>
+                                </td>
+                                <td>
+                                    <div class="date-display">
+                                        <div class="date-day">{{ $balance->created_at->format('M d, Y') }}</div>
+                                        <div class="date-time">{{ $balance->created_at->format('H:i:s') }}</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 @endsection
