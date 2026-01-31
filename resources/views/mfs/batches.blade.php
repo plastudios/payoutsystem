@@ -426,6 +426,16 @@
     }
 
     /* Responsive */
+    @media (max-width: 992px) {
+        .stats-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .page-subtitle {
+            font-size: 0.8rem;
+        }
+    }
+
     @media (max-width: 768px) {
         .table-card {
             padding: 16px;
@@ -439,10 +449,41 @@
         .page-header h2 {
             font-size: 1.5rem;
         }
+
+        .page-subtitle {
+            font-size: 0.75rem;
+        }
+
+        .table-header h5 {
+            font-size: 1rem;
+        }
         
         .stats-cards {
             grid-template-columns: 1fr 1fr;
             gap: 12px;
+        }
+
+        .stats-card {
+            padding: 16px;
+        }
+
+        .stats-card .icon-wrapper {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+
+        .stats-card .stats-label {
+            font-size: 0.75rem;
+        }
+
+        .stats-card .stats-value {
+            font-size: 1.25rem;
+        }
+
+        .stats-card .stats-value small {
+            font-size: 0.7rem !important;
         }
         
         .modal-dialog {
@@ -452,6 +493,149 @@
         .batch-info-grid {
             grid-template-columns: 1fr;
             gap: 12px;
+        }
+
+        /* Table improvements */
+        .table {
+            font-size: 0.75rem;
+        }
+
+        .table thead th {
+            font-size: 0.7rem;
+            padding: 8px;
+        }
+
+        .table tbody td {
+            padding: 8px;
+        }
+
+        .batch-id {
+            font-size: 0.75rem;
+            padding: 3px 6px;
+        }
+
+        .amount-display {
+            font-size: 0.85rem;
+        }
+
+        .status-badge {
+            font-size: 0.65rem;
+            padding: 3px 8px;
+        }
+
+        .status-badge i {
+            font-size: 0.6rem;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+        }
+
+        .btn-view {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+        }
+
+        .btn-view i {
+            font-size: 0.7rem;
+        }
+
+        /* DataTables mobile improvements */
+        .dt-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .dt-button {
+            padding: 6px 12px !important;
+            font-size: 0.75rem !important;
+            margin-right: 0 !important;
+        }
+
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 12px;
+        }
+
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            font-size: 0.75rem;
+        }
+
+        .dataTables_length select,
+        .dataTables_filter input {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+        }
+
+        /* Modal improvements */
+        .modal-header {
+            padding: 16px;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+        }
+
+        .modal-body {
+            padding: 16px;
+        }
+
+        .batch-info {
+            padding: 16px;
+        }
+
+        .batch-info-value {
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .stats-cards {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .stats-card {
+            padding: 16px;
+        }
+
+        .page-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .table-header i {
+            font-size: 0.9rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .btn-view {
+            padding: 4px 8px;
+            font-size: 0.7rem;
+        }
+
+        .btn-view i {
+            display: none;
+        }
+
+        /* Modal on very small screens */
+        .modal-dialog {
+            margin: 5px;
+        }
+
+        .batch-info-grid {
+            gap: 8px;
+        }
+
+        .batch-info-item {
+            padding: 8px;
         }
     }
 
@@ -523,58 +707,60 @@
             <h5>Batch Processing Overview</h5>
         </div>
         
-        <table class="table table-hover" id="mfsBatchesTable">
-            <thead>
-                <tr>
-                    <th>Batch ID</th>
-                    <th>Merchant</th>
-                    <th>Total Amount</th>
-                    <th>Total Count</th>
-                    <th>Pending</th>
-                    <th>Success</th>
-                    <th>Failed</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($batches as $batch)
+        <div class="table-responsive">
+            <table class="table table-hover" id="mfsBatchesTable">
+                <thead>
                     <tr>
-                        <td>
-                            <span class="batch-id">{{ $batch->batch_id }}</span>
-                        </td>
-                        <td>{{ $batch->merchant_id }}</td>
-                        <td>
-                            <span class="amount-display">{{ number_format($batch->total_amount, 2) }}</span>
-                            <small class="text-muted">BDT</small>
-                        </td>
-                        <td><span class="badge bg-light text-dark">{{ $batch->count }}</span></td>
-                        <td>
-                            <span class="status-badge status-pending">
-                                <i class="fas fa-clock"></i>
-                                {{ number_format($batch->pending, 2) }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="status-badge status-success">
-                                <i class="fas fa-check"></i>
-                                {{ number_format($batch->success, 2) }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="status-badge status-failed">
-                                <i class="fas fa-times"></i>
-                                {{ number_format($batch->failed, 2) }}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-view btn-sm" onclick="viewBatchDetails('{{ $batch->batch_id }}')">
-                                <i class="fas fa-eye me-1"></i> View Details
-                            </button>
-                        </td>
+                        <th>Batch ID</th>
+                        <th>Merchant</th>
+                        <th>Total Amount</th>
+                        <th>Total Count</th>
+                        <th>Pending</th>
+                        <th>Success</th>
+                        <th>Failed</th>
+                        <th>Actions</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach($batches as $batch)
+                        <tr>
+                            <td>
+                                <span class="batch-id">{{ $batch->batch_id }}</span>
+                            </td>
+                            <td>{{ $batch->merchant_id }}</td>
+                            <td>
+                                <span class="amount-display">{{ number_format($batch->total_amount, 2) }}</span>
+                                <small class="text-muted">BDT</small>
+                            </td>
+                            <td><span class="badge bg-light text-dark">{{ $batch->count }}</span></td>
+                            <td>
+                                <span class="status-badge status-pending">
+                                    <i class="fas fa-clock"></i>
+                                    {{ number_format($batch->pending, 2) }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge status-success">
+                                    <i class="fas fa-check"></i>
+                                    {{ number_format($batch->success, 2) }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge status-failed">
+                                    <i class="fas fa-times"></i>
+                                    {{ number_format($batch->failed, 2) }}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-view btn-sm" onclick="viewBatchDetails('{{ $batch->batch_id }}')">
+                                    <i class="fas fa-eye me-1"></i> View Details
+                                </button>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
