@@ -30,14 +30,15 @@ class UserController extends Controller
     }
     public function update(Request $request, $id)
     {
+        $user = User::findOrFail($id);
+        
         $request->validate([
             'merchant_id' => 'required|exists:merchants,merchant_id',
             'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'role' => 'required|string'
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'role' => 'required|in:admin,author,checker,maker,merchant'
         ]);
 
-        $user = User::findOrFail($id);
         $user->update([
             'merchant_id' => $request->merchant_id,
             'name' => $request->name,
