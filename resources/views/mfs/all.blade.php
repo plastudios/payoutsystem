@@ -417,6 +417,16 @@
     }
 
     /* Responsive */
+    @media (max-width: 992px) {
+        .page-header p {
+            font-size: 0.8rem;
+        }
+
+        .filter-card .row.g-3 > div {
+            margin-bottom: 12px;
+        }
+    }
+
     @media (max-width: 768px) {
         .filter-card, .bulk-actions-card, .table-card {
             padding: 16px;
@@ -430,6 +440,15 @@
         .page-header h2 {
             font-size: 1.5rem;
         }
+
+        .page-header p {
+            font-size: 0.75rem;
+        }
+
+        .filter-header h5,
+        .table-header h5 {
+            font-size: 1rem;
+        }
         
         .btn {
             padding: 8px 16px;
@@ -439,11 +458,126 @@
         .action-buttons {
             flex-direction: column;
         }
+
+        .action-buttons .btn {
+            width: 100%;
+        }
         
         .bulk-actions-header {
             flex-direction: column;
             align-items: flex-start;
             gap: 12px;
+        }
+
+        .d-flex.gap-2 {
+            flex-direction: column;
+            gap: 8px !important;
+        }
+
+        .d-flex.gap-2 .btn {
+            width: 100%;
+        }
+
+        /* Table improvements */
+        .table {
+            font-size: 0.75rem;
+        }
+
+        .table thead th {
+            font-size: 0.7rem;
+            padding: 8px;
+        }
+
+        .table tbody td {
+            padding: 8px;
+        }
+
+        pre {
+            font-size: 0.65rem;
+            max-height: 70px;
+            padding: 6px;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+        }
+
+        code {
+            font-size: 0.7rem;
+        }
+
+        /* DataTables mobile improvements */
+        .dt-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .dt-button {
+            padding: 6px 12px !important;
+            font-size: 0.75rem !important;
+            margin-right: 0 !important;
+        }
+
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 12px;
+        }
+
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            font-size: 0.75rem;
+        }
+
+        .dataTables_length select,
+        .dataTables_filter input {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+        }
+
+        /* Make action buttons smaller on mobile */
+        .action-buttons .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.7rem;
+        }
+
+        .action-buttons i {
+            font-size: 0.7rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .page-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .filter-header i,
+        .table-header i {
+            font-size: 0.9rem;
+        }
+
+        /* Stack all filter inputs vertically */
+        .filter-card .col-md-3,
+        .filter-card .col-md-2 {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Bulk actions on very small screens */
+        .bulk-actions-card .d-flex.gap-2 {
+            flex-direction: column;
+        }
+
+        .bulk-actions-card .btn {
+            width: 100%;
+            margin-bottom: 8px;
         }
     }
 </style>
@@ -551,82 +685,84 @@
         <h5>Payout Records</h5>
     </div>
     
-    <table class="table table-hover" id="payoutTable">
-        <thead>
-            <tr>
-                @if($canUpdate)
-                    <th style="width:40px;"><input type="checkbox" id="select-all"></th>
-                @endif
-                <th>Batch ID</th>
-                <th>Merchant</th>
-                <th>Reference</th>
-                <th>Amount</th>
-                <th>Wallet</th>
-                <th>Method</th>
-                <th>Status</th>
-                <th>API Response</th>
-                <th>Date</th>
-                @if($canUpdate)
-                    <th style="width:200px;">Actions</th>
-                @endif
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($payouts as $payout)
-            <tr data-id="{{ $payout->id }}">
-                @if($canUpdate)
-                    <td><input type="checkbox" class="row-check"></td>
-                @endif
-                <td><strong>{{ $payout->batch_id }}</strong></td>
-                <td>{{ $payout->merchant_id }}</td>
-                <td><code>{{ $payout->reference_key }}</code></td>
-                <td><strong>{{ number_format($payout->amount, 2) }}</strong> <small class="text-muted">BDT</small></td>
-                <td>{{ $payout->wallet_number }}</td>
-                <td><span class="badge bg-light text-dark">{{ $payout->method }}</span></td>
-                <td>
-                    <span class="badge bg-{{ $payout->status == 'Success' ? 'success' : ($payout->status == 'Failed' ? 'danger' : 'secondary') }}">
-                        {{ $payout->status }}
-                    </span>
-                </td>
-                @php $response = json_decode($payout->api_response, true); @endphp
-                <td><pre>{{ json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre></td>
-                <td>
-                    <div>{{ \Carbon\Carbon::parse($payout->created_at)->format('M d, Y') }}</div>
-                    <small class="text-muted">{{ \Carbon\Carbon::parse($payout->created_at)->format('H:i') }}</small>
-                </td>
-
-                @if($canUpdate)
+    <div class="table-responsive">
+        <table class="table table-hover" id="payoutTable">
+            <thead>
+                <tr>
+                    @if($canUpdate)
+                        <th style="width:40px;"><input type="checkbox" id="select-all"></th>
+                    @endif
+                    <th>Batch ID</th>
+                    <th>Merchant</th>
+                    <th>Reference</th>
+                    <th>Amount</th>
+                    <th>Wallet</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>API Response</th>
+                    <th>Date</th>
+                    @if($canUpdate)
+                        <th style="width:200px;">Actions</th>
+                    @endif
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($payouts as $payout)
+                <tr data-id="{{ $payout->id }}">
+                    @if($canUpdate)
+                        <td><input type="checkbox" class="row-check"></td>
+                    @endif
+                    <td><strong>{{ $payout->batch_id }}</strong></td>
+                    <td>{{ $payout->merchant_id }}</td>
+                    <td><code>{{ $payout->reference_key }}</code></td>
+                    <td><strong>{{ number_format($payout->amount, 2) }}</strong> <small class="text-muted">BDT</small></td>
+                    <td>{{ $payout->wallet_number }}</td>
+                    <td><span class="badge bg-light text-dark">{{ $payout->method }}</span></td>
                     <td>
-                        <div class="action-buttons">
-                            <form action="{{ route('mfs.update.status', $payout->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                <input type="hidden" name="status" value="Success">
-                                <button class="btn btn-sm btn-outline-success" title="Mark as Success">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                            </form>
-                            <form action="{{ route('mfs.update.status', $payout->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                <input type="hidden" name="status" value="Failed">
-                                <button class="btn btn-sm btn-outline-danger" title="Mark as Failed">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </form>
-                            <form action="{{ route('mfs.delete', $payout->id) }}" method="POST" class="d-inline"
-                                  onsubmit="return confirm('Delete this payout? If it was Success, a credit reversal will be added.');">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-sm btn-outline-secondary" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </div>
+                        <span class="badge bg-{{ $payout->status == 'Success' ? 'success' : ($payout->status == 'Failed' ? 'danger' : 'secondary') }}">
+                            {{ $payout->status }}
+                        </span>
                     </td>
-                @endif
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+                    @php $response = json_decode($payout->api_response, true); @endphp
+                    <td><pre>{{ json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre></td>
+                    <td>
+                        <div>{{ \Carbon\Carbon::parse($payout->created_at)->format('M d, Y') }}</div>
+                        <small class="text-muted">{{ \Carbon\Carbon::parse($payout->created_at)->format('H:i') }}</small>
+                    </td>
+
+                    @if($canUpdate)
+                        <td>
+                            <div class="action-buttons">
+                                <form action="{{ route('mfs.update.status', $payout->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="status" value="Success">
+                                    <button class="btn btn-sm btn-outline-success" title="Mark as Success">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                                <form action="{{ route('mfs.update.status', $payout->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="status" value="Failed">
+                                    <button class="btn btn-sm btn-outline-danger" title="Mark as Failed">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                                <form action="{{ route('mfs.delete', $payout->id) }}" method="POST" class="d-inline"
+                                      onsubmit="return confirm('Delete this payout? If it was Success, a credit reversal will be added.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-outline-secondary" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    @endif
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection
 
