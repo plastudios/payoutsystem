@@ -257,24 +257,79 @@
 
         /* Mobile Responsiveness */
         @media (max-width: 991.98px) {
-            .navbar-nav {
-                padding: 20px 0;
-                background: rgba(255, 255, 255, 0.1);
+            .navbar-toggler {
+                background: rgba(255, 255, 255, 0.2);
+                padding: 10px 15px;
+                border-radius: 8px;
+                border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            }
+
+            .navbar-toggler:focus {
+                box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+            }
+
+            .navbar-toggler i {
+                font-size: 1.5rem;
+            }
+
+            .navbar-collapse {
+                background: rgba(102, 126, 234, 0.98);
+                backdrop-filter: blur(20px);
                 border-radius: 15px;
                 margin-top: 15px;
+                padding: 15px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                position: relative;
+                z-index: 1000;
+            }
+
+            .navbar-nav {
+                padding: 10px 0;
+                background: transparent;
+                border-radius: 0;
+                margin-top: 0;
             }
 
             .nav-pills-custom .nav-link {
                 margin: 5px 0;
                 text-align: center;
+                background: rgba(255, 255, 255, 0.15);
+                color: white !important;
+            }
+
+            .nav-pills-custom .nav-link:hover {
+                background: rgba(255, 255, 255, 0.25);
+            }
+
+            .nav-pills-custom .nav-link.active {
+                background: rgba(255, 255, 255, 0.3) !important;
             }
 
             .dropdown-menu-custom {
                 position: static !important;
                 transform: none !important;
                 box-shadow: none;
-                background: rgba(255, 255, 255, 0.1);
+                background: rgba(255, 255, 255, 0.2);
                 margin: 10px 0;
+                backdrop-filter: blur(10px);
+            }
+
+            .dropdown-item-custom {
+                color: white !important;
+            }
+
+            .dropdown-item-custom:hover {
+                background: rgba(255, 255, 255, 0.3);
+                color: white !important;
+            }
+
+            .dropdown-header-custom {
+                color: rgba(255, 255, 255, 0.8) !important;
+            }
+
+            .user-dropdown {
+                background: rgba(255, 255, 255, 0.2);
+                justify-content: center;
             }
         }
 
