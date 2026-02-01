@@ -98,7 +98,8 @@ class UserController extends Controller
 
     public function user_index()
     {
-        $users = User::with('merchant')->get();
+        // Exclude agents; they are managed from the Agents section
+        $users = User::where('role', '!=', 'agent')->with('merchant')->get();
         return view('users.index', compact('users'));
     }
 

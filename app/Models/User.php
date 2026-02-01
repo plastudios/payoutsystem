@@ -21,6 +21,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
         'role',
         'merchant_id',
@@ -52,5 +53,24 @@ class User extends Authenticatable
     public function merchant()
     {
         return $this->belongsTo(Merchant::class, 'merchant_id', 'merchant_id');
+    }
+
+    public function merchants()
+    {
+        return $this->belongsToMany(Merchant::class, 'user_merchant', 'user_id', 'merchant_id', 'id', 'merchant_id');
+    }
+
+    /**
+     * Get merchant IDs this user can see (for scoping data).
+     */
+    public function getMerchantIds(): array
+    {
+        if ($this->role === 'merchant' && $this->merchant_id) {
+            return [$this->merchant_id];
+        }
+        if ($this->role === 'agent') {
+            return $this->merchants()->pluck('user_merchant.merchant_id')->toArray();
+        }
+        return [];
     }
 }

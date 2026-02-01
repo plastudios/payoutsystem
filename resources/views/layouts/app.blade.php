@@ -248,6 +248,11 @@
             color: white;
         }
 
+        .role-agent {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
         /* Content Area */
         .content-wrapper {
             margin-top: var(--navbar-height);
@@ -412,6 +417,15 @@
                         </a>
                     </li>
 
+                    @if(auth()->check() && auth()->user()->role === 'agent')
+                        <li class="nav-item">
+                            <a class="nav-link {{ Request::is('agent/payment-requests*') ? 'active' : '' }}"
+                                href="{{ route('agent.payment_requests.index') }}">
+                                <i class="fas fa-hand-holding-usd"></i> Payment Request
+                            </a>
+                        </li>
+                    @endif
+
                     @if(auth()->check() && in_array(auth()->user()->role, ['checker', 'admin']))
                         <li class="nav-item">
                             <a class="nav-link {{ Request::is('payouts/to-check') ? 'active' : '' }}"
@@ -544,12 +558,18 @@
                                     <li><a class="dropdown-item dropdown-item-custom" href="/admin/users">
                                             <i class="fas fa-users"></i> User List
                                         </a></li>
+                                    <li><a class="dropdown-item dropdown-item-custom" href="{{ route('agents.index') }}">
+                                            <i class="fas fa-user-tie"></i> Agents
+                                        </a></li>
+                                    <li><a class="dropdown-item dropdown-item-custom" href="{{ route('agents.create') }}">
+                                            <i class="fas fa-user-plus"></i> Create Agent
+                                        </a></li>
                                     <li><a class="dropdown-item dropdown-item-custom" href="{{ route('admin.webhook.logs') }}">
                                             <i class="fas fa-webhook"></i> Webhook Logs
                                         </a></li>
                                 @endif
 
-                                @if(auth()->user()->role === 'merchant')
+                                @if(auth()->check() && auth()->user()->role === 'merchant')
                                     <li><a class="dropdown-item dropdown-item-custom"
                                             href="{{ route('merchant.webhook.edit') }}">
                                             <i class="fas fa-webhook"></i> Webhook Settings
@@ -585,11 +605,13 @@
                         </li>
                     @endif
 
+                    @if(auth()->check() && auth()->user()->role !== 'agent')
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url('/api/documentation') }}" target="_blank">
                             <i class="fas fa-book-open"></i> API Docs
                         </a>
                     </li>
+                    @endif
                 </ul>
 
                 <!-- User Profile -->

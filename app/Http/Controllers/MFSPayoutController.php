@@ -42,9 +42,16 @@ class MFSPayoutController extends Controller
             'merchant_id' => 'required|exists:merchants,merchant_id',
         ]);
 
-        $merchantId = auth()->user()->role === 'merchant'
-            ? auth()->user()->merchant_id
-            : $request->merchant_id;
+        $user = auth()->user();
+        $merchantIds = $user->getMerchantIds();
+        if (!empty($merchantIds)) {
+            $merchantId = count($merchantIds) === 1 ? $merchantIds[0] : $request->merchant_id;
+            if ($user->role === 'agent' && (! $merchantId || ! in_array($merchantId, $merchantIds))) {
+                return back()->with('error', 'Invalid or unauthorized merchant.');
+            }
+        } else {
+            $merchantId = $request->merchant_id;
+        }
 
         $batchId = 'MFS-' . strtoupper(Str::random(10));
         $data = Excel::toArray([], $request->file('payout_file'));
@@ -176,9 +183,9 @@ class MFSPayoutController extends Controller
         )
             ->groupBy('batch_id', 'merchant_id');
 
-        // If merchant logged in, filter by their merchant_id
-        if (auth()->user()->role === 'merchant') {
-            $query->where('merchant_id', auth()->user()->merchant_id);
+        $merchantIds = auth()->user()->getMerchantIds();
+        if (!empty($merchantIds)) {
+            $query->whereIn('merchant_id', $merchantIds);
         }
 
         $batches = $query->get();
@@ -222,10 +229,9 @@ class MFSPayoutController extends Controller
      public function batchDetails($batchId)
     {
         $query = MFSPayout::where('batch_id', $batchId);
-
-        // Restrict for merchant users
-        if (auth()->user()->role === 'merchant') {
-            $query->where('merchant_id', auth()->user()->merchant_id);
+        $merchantIds = auth()->user()->getMerchantIds();
+        if (!empty($merchantIds)) {
+            $query->whereIn('merchant_id', $merchantIds);
         }
 
         $payouts = $query->get();
@@ -269,14 +275,18 @@ class MFSPayoutController extends Controller
         ]);
 
         $q = MFSPayout::query();
+        $merchantIds = auth()->user()->getMerchantIds();
 
-        // Role-based merchant scoping
-        if (auth()->user()->role === 'merchant') {
-            $forcedMerchantId = auth()->user()->merchant_id;
-            $q->where('merchant_id', $forcedMerchantId);
-            $merchantFilter = $forcedMerchantId;
-            // only show their id in the dropdown (read-only in UI)
-            $merchants = collect([$forcedMerchantId]);
+        // Role-based merchant scoping (merchant or agent)
+        if (!empty($merchantIds)) {
+            $q->whereIn('merchant_id', $merchantIds);
+            if ($request->filled('merchant_id') && $request->merchant_id !== 'all' && in_array($request->merchant_id, $merchantIds)) {
+                $q->where('merchant_id', $request->merchant_id);
+                $merchantFilter = $request->merchant_id;
+            } else {
+                $merchantFilter = 'all';
+            }
+            $merchants = collect($merchantIds);
         } else {
             // Admins can filter by merchant or see all
             if ($request->filled('merchant_id') && $request->merchant_id !== 'all') {
@@ -285,7 +295,6 @@ class MFSPayoutController extends Controller
             } else {
                 $merchantFilter = 'all';
             }
-            // Build merchant list for dropdown (you can also use Merchant::pluck('merchant_id'))
             $merchants = MFSPayout::select('merchant_id')->distinct()->orderBy('merchant_id')->pluck('merchant_id');
         }
 
@@ -391,6 +400,20 @@ class MFSPayoutController extends Controller
         // Save new status
         $payout->status = $newStatus;
         $payout->save();
+    }
+
+    /**
+     * Apply only balance (debit/credit) logic for a status change. Used when payout
+     * has already been updated (e.g. by AgentPaymentRequestController) with status,
+     * completed_at, agent_id, etc. Does not modify the payout model.
+     */
+    public function applyBalanceForStatus(MFSPayout $payout, string $newStatus, string $oldStatus): void
+    {
+        if ($newStatus === 'Success') {
+            $this->ensureDebitIfMissing($payout);
+        } elseif ($newStatus === 'Failed' && $oldStatus === 'Success') {
+            $this->ensureCreditIfMissing($payout);
+        }
     }
 
     // ---------- Single update ----------
@@ -500,12 +523,16 @@ class MFSPayoutController extends Controller
         // $merchants = Merchant::orderBy('merchant_id')->pluck('merchant_id');
         $merchants = MerchantBalance::select('merchant_id')->distinct()->orderBy('merchant_id')->pluck('merchant_id');
 
-        // Role-based scoping
-        if (auth()->user()->role === 'merchant') {
-            $merchantId = auth()->user()->merchant_id; // forced
-            $merchants  = collect([$merchantId]);
+        // Role-based scoping (merchant or agent)
+        $merchantIds = auth()->user()->getMerchantIds();
+        if (!empty($merchantIds)) {
+            $merchantId = $request->input('merchant_id', count($merchantIds) === 1 ? $merchantIds[0] : 'all');
+            if ($merchantId !== 'all' && !in_array($merchantId, $merchantIds)) {
+                $merchantId = count($merchantIds) === 1 ? $merchantIds[0] : 'all';
+            }
+            $merchants = collect($merchantIds);
         } else {
-            $merchantId = $request->input('merchant_id', 'all'); // admin can choose 'all'
+            $merchantId = $request->input('merchant_id', 'all');
         }
 
         // Date range (inclusive)
@@ -519,7 +546,15 @@ class MFSPayoutController extends Controller
         $balScope = MerchantBalance::query();
         $payScope = MFSPayout::query();
 
-        if ($merchantId !== 'all') {
+        if (!empty($merchantIds)) {
+            if ($merchantId !== 'all') {
+                $balScope->where('merchant_id', $merchantId);
+                $payScope->where('merchant_id', $merchantId);
+            } else {
+                $balScope->whereIn('merchant_id', $merchantIds);
+                $payScope->whereIn('merchant_id', $merchantIds);
+            }
+        } elseif ($merchantId !== 'all') {
             $balScope->where('merchant_id', $merchantId);
             $payScope->where('merchant_id', $merchantId);
         }
@@ -543,7 +578,13 @@ class MFSPayoutController extends Controller
 
         // --- Available balance (all-time, not limited by date range)
         $availScope = MerchantBalance::query();
-        if ($merchantId !== 'all') {
+        if (!empty($merchantIds)) {
+            if ($merchantId !== 'all') {
+                $availScope->where('merchant_id', $merchantId);
+            } else {
+                $availScope->whereIn('merchant_id', $merchantIds);
+            }
+        } elseif ($merchantId !== 'all') {
             $availScope->where('merchant_id', $merchantId);
         }
         $creditedAll = (clone $availScope)->where('type', 'credit')->sum('amount');

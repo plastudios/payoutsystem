@@ -9,6 +9,8 @@ use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\Api\PayoutApiController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AgentController;
+use App\Http\Controllers\AgentPaymentRequestController;
 use App\Http\Controllers\MerchantSettingsController;
 use App\Http\Controllers\MFSPayoutController;
 
@@ -23,7 +25,7 @@ Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
 
-Route::middleware(['auth', 'nocache'])->group(function () {
+Route::middleware(['auth', 'nocache', 'restrict.agent'])->group(function () {
 
     Route::get('/dashboard', [AuthController::class, 'dashboard'])->middleware('auth');
 
@@ -59,22 +61,25 @@ Route::middleware(['auth', 'nocache'])->group(function () {
 
     Route::get('/dashboard', function () {
         $user = Auth::user();
+        if ($user->role === 'agent') {
+            return view('agent.dashboard');
+        }
+        $merchantIds = $user->getMerchantIds();
 
-        if ($user->role === 'merchant') {
-            $merchantId = $user->merchant_id;
+        if (!empty($merchantIds)) {
+            // Merchant or agent: scope to their merchant(s)
+            $successCount = Payout::whereIn('merchant_id', $merchantIds)->where('status', 'Success')->count();
+            $failedCount = Payout::whereIn('merchant_id', $merchantIds)->where('status', 'Failed')->count();
+            $successAmount = Payout::whereIn('merchant_id', $merchantIds)->where('status', 'Success')->sum('amount');
+            $failedAmount = Payout::whereIn('merchant_id', $merchantIds)->where('status', 'Failed')->sum('amount');
 
-            $successCount = Payout::where('merchant_id', $merchantId)->where('status', 'Success')->count();
-            $failedCount = Payout::where('merchant_id', $merchantId)->where('status', 'Failed')->count();
-            $successAmount = Payout::where('merchant_id', $merchantId)->where('status', 'Success')->sum('amount');
-            $failedAmount = Payout::where('merchant_id', $merchantId)->where('status', 'Failed')->sum('amount');
-
-            $credit = MerchantBalance::where('merchant_id', $merchantId)->where('type', 'credit')->sum('amount');
-            $debit = MerchantBalance::where('merchant_id', $merchantId)->where('type', 'debit')->sum('amount');
+            $credit = MerchantBalance::whereIn('merchant_id', $merchantIds)->where('type', 'credit')->sum('amount');
+            $debit = MerchantBalance::whereIn('merchant_id', $merchantIds)->where('type', 'debit')->sum('amount');
             $availableBalance = $credit - $debit;
             $MFSsuccessAmount = MFSPayout::where('status', 'Success')->sum('amount');
             $successAmount = $successAmount + $MFSsuccessAmount;
-            $mfsSuccessCount = MFSPayout::where('merchant_id', $merchantId)->where('status', 'Success')->count();
-            $mfsFailedCount = MFSPayout::where('merchant_id', $merchantId)->where('status', 'Failed')->count();
+            $mfsSuccessCount = MFSPayout::whereIn('merchant_id', $merchantIds)->where('status', 'Success')->count();
+            $mfsFailedCount = MFSPayout::whereIn('merchant_id', $merchantIds)->where('status', 'Failed')->count();
 
             return view('dashboard', compact(
                 'successCount',
@@ -89,7 +94,7 @@ Route::middleware(['auth', 'nocache'])->group(function () {
             ));
         }
 
-        // Admin dashboard data
+        // Admin dashboard data (or agent/merchant with no merchants)
         $successCount = Payout::where('status', 'Success')->count();
         $failedCount = Payout::where('status', 'Failed')->count();
         $successAmount = Payout::where('status', 'Success')->sum('amount');
@@ -162,6 +167,14 @@ Route::middleware(['auth', 'nocache'])->group(function () {
         // Update password
         Route::get('/users/{id}/change-password', [UserController::class, 'showChangePasswordForm'])->name('users.change_password');
         Route::put('/users/{id}/update-password', [UserController::class, 'updatePassword'])->name('users.update_password');
+
+        // Agents (separate from user creation)
+        Route::get('/agents', [AgentController::class, 'index'])->name('agents.index');
+        Route::get('/agents/create', [AgentController::class, 'create'])->name('agents.create');
+        Route::post('/agents', [AgentController::class, 'store'])->name('agents.store');
+        Route::get('/agents/{id}/edit', [AgentController::class, 'edit'])->name('agents.edit');
+        Route::put('/agents/{id}', [AgentController::class, 'update'])->name('agents.update');
+        Route::delete('/agents/{id}', [AgentController::class, 'destroy'])->name('agents.destroy');
     });
 
     //route group
@@ -213,7 +226,7 @@ Route::middleware(['auth', 'nocache'])->group(function () {
         //new route end
     });
 
-    Route::middleware(['auth', 'role:admin,author,checker,maker,merchant'])->group(function () {
+    Route::middleware(['auth', 'role:admin,author,checker,maker,merchant,agent'])->group(function () {
         // mfs route
         Route::get('/mfs-payout/batch/{batchId}', [MFSPayoutController::class, 'batchDetails'])->name('mfs.batch.details');
         Route::get('/mfs-payout/batches', [MFSPayoutController::class, 'showBatchSummary'])->name('mfs.batches');
@@ -233,11 +246,16 @@ Route::middleware(['auth', 'nocache'])->group(function () {
         Route::get('/webhook-logs', [MerchantSettingsController::class, 'viewWebhookLogs'])->name('merchant.webhook.logs');
     });
 
-    Route::middleware(['auth', 'role:merchant'])->group(function () {
+    Route::middleware(['auth', 'role:merchant,agent'])->group(function () {
 
 
     });
 
+    Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.payment_requests.')->group(function () {
+        Route::get('/payment-requests', [AgentPaymentRequestController::class, 'index'])->name('index');
+        Route::post('/payment-requests/{id}/success', [AgentPaymentRequestController::class, 'markSuccess'])->name('success');
+        Route::post('/payment-requests/{id}/fail', [AgentPaymentRequestController::class, 'markFailed'])->name('fail');
+    });
 
 });
 // Route::post('/merchant/login', [MerchantAuthController::class, 'login']);

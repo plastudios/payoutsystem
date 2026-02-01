@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'nocache' => \App\Http\Middleware\NoCache::class,
+            'restrict.agent' => \App\Http\Middleware\RestrictAgentRoutes::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

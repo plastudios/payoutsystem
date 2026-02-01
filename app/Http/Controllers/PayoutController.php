@@ -80,9 +80,16 @@ class PayoutController extends Controller
             'merchant_id' => 'required|exists:merchants,merchant_id',
         ]);
     
-        $merchantId = auth()->user()->role === 'merchant'
-        ? auth()->user()->merchant_id
-        : $request->merchant_id;
+        $user = auth()->user();
+        $merchantIds = $user->getMerchantIds();
+        if (!empty($merchantIds)) {
+            $merchantId = count($merchantIds) === 1 ? $merchantIds[0] : $request->merchant_id;
+            if ($user->role === 'agent' && (! $merchantId || ! in_array($merchantId, $merchantIds))) {
+                return back()->with('error', 'Invalid or unauthorized merchant.');
+            }
+        } else {
+            $merchantId = $request->merchant_id;
+        }
 
         $batchId = 'BATCH-' . strtoupper(Str::random(10));
         $data = Excel::toArray([], $request->file('payout_file'));
@@ -144,12 +151,10 @@ class PayoutController extends Controller
     public function details()
     {
         $user = auth()->user();
+        $merchantIds = $user->getMerchantIds();
 
-        if ($user->role === 'merchant') {
-            // Show only payouts belonging to the logged-in merchant
-            $payouts = Payout::where('merchant_id', $user->merchant_id)
-                            ->latest()
-                            ->get();
+        if (!empty($merchantIds)) {
+            $payouts = Payout::whereIn('merchant_id', $merchantIds)->latest()->get();
         } else {
             // Admins, checkers, authors, etc. can see all payouts
             $payouts = Payout::latest()->get();
@@ -196,10 +201,10 @@ class PayoutController extends Controller
         $user = auth()->user();
 
         $query = Payout::whereBetween('created_at', [$from, $to]);
+        $merchantIds = $user->getMerchantIds();
 
-        // ✅ Filter for merchant
-        if ($user->role === 'merchant') {
-            $query->where('merchant_id', $user->merchant_id);
+        if (!empty($merchantIds)) {
+            $query->whereIn('merchant_id', $merchantIds);
         }
 
         $payouts = $query->orderBy('created_at', 'desc')->get();
@@ -342,11 +347,11 @@ class PayoutController extends Controller
     public function batchList()
     {
         $user = auth()->user();
+        $merchantIds = $user->getMerchantIds();
 
         $query = Payout::query();
-
-        if ($user->role === 'merchant') {
-            $query->where('merchant_id', $user->merchant_id);
+        if (!empty($merchantIds)) {
+            $query->whereIn('merchant_id', $merchantIds);
         }
 
         $batches = $query->select('merchant_id', 'batch_id')
@@ -365,11 +370,11 @@ class PayoutController extends Controller
     public function batchDetails($batchId)
     {
         $user = auth()->user();
+        $merchantIds = $user->getMerchantIds();
 
         $query = Payout::where('batch_id', $batchId);
-
-        if ($user->role === 'merchant') {
-            $query->where('merchant_id', $user->merchant_id);
+        if (!empty($merchantIds)) {
+            $query->whereIn('merchant_id', $merchantIds);
         }
 
         $payouts = $query->get();

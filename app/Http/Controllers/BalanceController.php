@@ -45,17 +45,21 @@ class BalanceController extends Controller
 
         $user = auth()->user();
         $q = MerchantBalance::query();
+        $merchantIds = $user->getMerchantIds();
 
-        // Merchant filter - if user is a merchant, force their merchant_id
-        if ($user->role === 'merchant') {
-            $merchantId = $user->merchant_id;
-            $q->where('merchant_id', $merchantId);
+        // Merchant/agent filter - scope to their merchant(s)
+        if (!empty($merchantIds)) {
+            $q->whereIn('merchant_id', $merchantIds);
+            $merchantId = count($merchantIds) === 1 ? $merchantIds[0] : ($request->input('merchant_id') ?: 'all');
         } else {
             // For admin/other roles, allow filtering
             $merchantId = $request->input('merchant_id');
             if ($merchantId && $merchantId !== 'all') {
                 $q->where('merchant_id', $merchantId);
             }
+        }
+        if (empty($merchantIds) && !isset($merchantId)) {
+            $merchantId = $request->input('merchant_id');
         }
 
         // Date range (inclusive)
@@ -88,7 +92,7 @@ class BalanceController extends Controller
             'merchantId' => $merchantId,
             'start' => $request->start_date,
             'end' => $request->end_date,
-            'isMerchant' => $user->role === 'merchant', // Pass this to the view
+            'isMerchant' => in_array($user->role, ['merchant', 'agent']), // Pass this to the view
         ]);
     }
     public function index()
@@ -137,10 +141,11 @@ class BalanceController extends Controller
         ]);
 
         $user = auth()->user();
+        $merchantIds = $user->getMerchantIds();
 
         // Build query based on user role
-        if ($user->role === 'merchant') {
-            $q = MerchantBalance::where('merchant_id', $user->merchant_id);
+        if (!empty($merchantIds)) {
+            $q = MerchantBalance::whereIn('merchant_id', $merchantIds);
         } else {
             // Admins or others can see all data
             $q = MerchantBalance::query();
