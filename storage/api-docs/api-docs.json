@@ -11,9 +11,6 @@
     "servers": [
         {
             "url": "https://payoutsystem.faastpay.xyz"
-        },
-        {
-            "url": "https://payoutsystem.faastpay.xyz"
         }
     ],
     "paths": {
@@ -331,6 +328,11 @@
                                             "type": "string",
                                             "example": "your-bearer-token"
                                         },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2026-01-16T03:09:09+00:00"
+                                        },
                                         "merchant_id": {
                                             "type": "string",
                                             "example": "merchant123"
@@ -407,6 +409,90 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/merchant/balance": {
+            "get": {
+                "tags": [
+                    "Balance"
+                ],
+                "summary": "Get Merchant Current Balance",
+                "description": "Returns the available balance for the authenticated merchant, derived directly from their API token. No request body is needed.",
+                "operationId": "af223227a214c0045b3870c975275fe1",
+                "responses": {
+                    "200": {
+                        "description": "Balance fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "merchant_id": {
+                                            "type": "string",
+                                            "example": "faastpay"
+                                        },
+                                        "currency": {
+                                            "type": "string",
+                                            "example": "BDT"
+                                        },
+                                        "total_credited": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 10000
+                                        },
+                                        "total_debited": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 3000
+                                        },
+                                        "available_balance": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 7000
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated - missing or invalid token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 401
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/merchant/payouts": {
@@ -691,6 +777,10 @@
         {
             "name": "Authentication",
             "description": "Endpoints for login and token"
+        },
+        {
+            "name": "Balance",
+            "description": "Endpoints for checking merchant balance"
         },
         {
             "name": "MFS Payouts",

@@ -13,7 +13,7 @@ Route::post('/merchant/token', [MerchantAuthController::class, 'token']);
 
 Route::middleware('auth:sanctum')->group(function () {
     
-    Route::post('/merchant/balance', [MerchantAuthController::class, 'fetchBalance']);
+    Route::get('/merchant/balance', [MerchantAuthController::class, 'fetchBalance']);
 
     Route::post('/merchant/payouts', [PayoutApiController::class, 'bulkCreate']);
     Route::get('/merchant/payouts/batch/{batch_id}', [PayoutApiController::class, 'fetchBatch']);

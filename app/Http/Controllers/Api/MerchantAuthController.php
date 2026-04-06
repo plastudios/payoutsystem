@@ -115,36 +115,60 @@ class MerchantAuthController extends Controller
     }
 
 
+    /**
+     * @OA\Get(
+     *     path="/api/merchant/balance",
+     *     summary="Get Merchant Current Balance",
+     *     description="Returns the available balance for the authenticated merchant, derived directly from their API token. No request body is needed.",
+     *     tags={"Balance"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Balance fetched successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="code", type="integer", example=200),
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="merchant_id", type="string", example="faastpay"),
+     *             @OA\Property(property="currency", type="string", example="BDT"),
+     *             @OA\Property(property="total_credited", type="number", format="float", example=10000.00),
+     *             @OA\Property(property="total_debited", type="number", format="float", example=3000.00),
+     *             @OA\Property(property="available_balance", type="number", format="float", example=7000.00)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated - missing or invalid token",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="code", type="integer", example=401),
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated.")
+     *         )
+     *     )
+     * )
+     */
     public function fetchBalance(Request $request)
     {
-        $request->validate([
-            'merchant_id' => 'required|string',
-        ]);
+        $user       = $request->user();
+        $merchantId = $user->merchant_id;
 
-        if ($request->user()->merchant_id !== $request->merchant_id) {
-            return response()->json([
-                'code' => 403,
-                'status' => 'error',
-                'message' => 'Merchant ID mismatch',
-            ], 403);
-        }
-
-        $merchantId = $request->merchant_id;
-
-        $credit = MerchantBalance::where('merchant_id', $merchantId)
+        $totalCredited = MerchantBalance::where('merchant_id', $merchantId)
             ->where('type', 'credit')
             ->sum('amount');
 
-        $debit = MerchantBalance::where('merchant_id', $merchantId)
+        $totalDebited = MerchantBalance::where('merchant_id', $merchantId)
             ->where('type', 'debit')
             ->sum('amount');
 
-        $availableBalance = $credit - $debit;
+        $availableBalance = $totalCredited - $totalDebited;
 
         return response()->json([
-            'code' => 200,
-            'status' => 'success',
-            'balance' => $availableBalance,
+            'code'              => 200,
+            'status'            => 'success',
+            'merchant_id'       => $merchantId,
+            'currency'          => 'BDT',
+            'total_credited'    => round($totalCredited, 2),
+            'total_debited'     => round($totalDebited, 2),
+            'available_balance' => round($availableBalance, 2),
         ]);
     }
 

@@ -31,6 +31,11 @@ use App\Http\Controllers\Controller;
  * )
  *
  * @OA\Tag(
+ *     name="Balance",
+ *     description="Endpoints for checking merchant balance"
+ * )
+ *
+ * @OA\Tag(
  *     name="MFS Payouts",
  *     description="Endpoints for MFS payout operations"
  * )
